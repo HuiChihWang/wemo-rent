@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:13
+    container_name: wemo-db
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: wemo-db
+    ports:
+        - "5437:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
