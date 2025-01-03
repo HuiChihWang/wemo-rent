@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class ReturningRequest {
+export class ReturnScooterRequest {
   @IsNotEmpty()
   @IsString()
-  userName: string;
+  rentBy: string;
 }

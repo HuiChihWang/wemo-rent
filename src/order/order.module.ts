@@ -1,10 +1,20 @@
 import { Module } from '@nestjs/common';
-import { OrderController } from './controller/order.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Order } from './entity/order.entity';
+import { OrderService } from './service/order.service';
+import { HttpModule } from '@nestjs/axios';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order])],
-  controllers: [OrderController],
+  imports: [
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        baseURL: configService.get<string>('ORDER_API_URL'),
+        timeout: 5000,
+      }),
+    }),
+  ],
+  providers: [OrderService],
+  exports: [OrderService],
 })
 export class OrderModule {}

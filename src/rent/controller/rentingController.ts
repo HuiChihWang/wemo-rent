@@ -1,8 +1,9 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { RentingRequest } from '../request/renting.request';
-import { ReturningRequest } from '../request/returning.request';
+import { ReturnScooterRequest } from '../request/return-scooter.request';
 import { RentingService } from '../service/renting.service';
 import { RentingResponse } from '../response/renting.response';
+import { ReturnScooterResponse } from '../response/return-scooter.response';
 
 @Controller('rent')
 export class RentingController {
@@ -17,8 +18,10 @@ export class RentingController {
   }
 
   @Post('return')
-  public async finishRent(@Body() request: ReturningRequest) {
-    await this.rentingService.returnScooter(request);
-    return 'Rent finished';
+  @HttpCode(200)
+  public async finishRent(
+    @Body() request: ReturnScooterRequest,
+  ): Promise<ReturnScooterResponse> {
+    return this.rentingService.returnScooter(request);
   }
 }

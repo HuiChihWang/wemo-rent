@@ -6,6 +6,10 @@ import { Scooter, ScooterStatus } from '../entity/scooter.entity';
 export class ScooterService {
   constructor(private readonly scooterRepository: ScooterRepository) {}
 
+  public async getScooterById(scooterId: number): Promise<Scooter | null> {
+    return this.scooterRepository.findOneBy({ id: scooterId });
+  }
+
   public async getScooterByScooterNo(
     scooterNo: string,
   ): Promise<Scooter | null> {

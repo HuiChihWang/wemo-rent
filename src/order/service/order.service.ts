@@ -1,20 +1,50 @@
 import { Injectable } from '@nestjs/common';
-import { OrderRepository } from '../repository/order.repository';
-import { Order } from '../entity/order.entity';
+import {
+  IOrderService,
+  OrderListResponse,
+  OrderResponse,
+} from './interface/order-service.interface';
+import { OrderDto } from '../dto/order.dto';
+import { CreateOrderDto } from '../dto/create-order.dto';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import { OrderStatus } from '../enum/order-status.enum';
 
 @Injectable()
-export class OrderService {
-  constructor(private readonly orderRepository: OrderRepository) {}
+export class OrderService implements IOrderService {
+  constructor(private readonly orderApiService: HttpService) {}
 
-  public async createOrder(
-    userId: number,
-    rentingId: number,
-    amount: number,
-  ): Promise<Order> {
-    return this.orderRepository.create({
-      userId,
-      rentingHistoryId: rentingId,
-      amount,
+  public async createOrder(data: CreateOrderDto): Promise<OrderDto> {
+    const response$ = this.orderApiService.post<OrderResponse>('/order', {
+      rentingHistoryId: data.rentingId,
+      userId: data.userId,
+      amount: data.amount,
     });
+    const { data: resData } = await firstValueFrom(response$);
+
+    return {
+      rentingHistoryId: resData.rentingHistoryId,
+      userId: resData.userId,
+      amount: resData.amount,
+      status: resData.status,
+      createdAt: new Date(resData.createdAt),
+    };
+  }
+
+  public async isUserHasUnpaidOrder(userId: number): Promise<boolean> {
+    const response$ = this.orderApiService.get<OrderListResponse>(
+      `/order/list`,
+      {
+        params: {
+          userId: userId,
+          status: OrderStatus.PENDING,
+        },
+      },
+    );
+
+    const { data: resData } = await firstValueFrom(response$);
+    const total = resData.total;
+
+    return total > 0;
   }
 }

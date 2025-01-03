@@ -9,12 +9,15 @@ import { ScooterService } from '../../scooter/service/scooter.service';
 import { ScooterStatus } from '../../scooter/entity/scooter.entity';
 import { RentingHistory, RentingStatus } from '../entity/renting_histoy.entity';
 import { RentingRequest } from '../request/renting.request';
-import { ReturningRequest } from '../request/returning.request';
+import { ReturnScooterRequest } from '../request/return-scooter.request';
 import { RentingResponse } from '../response/renting.response';
+import { OrderService } from '../../order/service/order.service';
+import { ReturnScooterResponse } from '../response/return-scooter.response';
 
 @Injectable()
 export class RentingService {
   constructor(
+    private readonly orderService: OrderService,
     private readonly scooterService: ScooterService,
     private readonly userService: UserService,
     private readonly rentingHistoryRepository: RentingHistoryRepository,
@@ -45,7 +48,9 @@ export class RentingService {
     const scooterId = scooter.id;
     const userId = user.id;
 
-    // TODO: check if user has any unpaid order
+    if (await this.orderService.isUserHasUnpaidOrder(userId)) {
+      throw new BadRequestException('User has unpaid order');
+    }
 
     await this.scooterService.changeScooterStatus(
       scooterId,
@@ -70,8 +75,10 @@ export class RentingService {
     );
   }
 
-  public async returnScooter(returnRequest: ReturningRequest): Promise<void> {
-    const userName = returnRequest.userName;
+  public async returnScooter(
+    returnRequest: ReturnScooterRequest,
+  ): Promise<ReturnScooterResponse> {
+    const userName = returnRequest.rentBy;
     const user = await this.userService.getUserByUserName(userName);
 
     if (!user) {
@@ -88,8 +95,12 @@ export class RentingService {
     rentingHistory.status = RentingStatus.RETURNED;
     await this.rentingHistoryRepository.save(rentingHistory);
 
-    await this.scooterService.changeScooterStatus(
+    const scooter = await this.scooterService.getScooterById(
       rentingHistory.scooterId,
+    );
+
+    await this.scooterService.changeScooterStatus(
+      scooter.id,
       ScooterStatus.AVAILABLE,
     );
 
@@ -97,15 +108,36 @@ export class RentingService {
 
     const rentingPrice = this.calculateRentingPrice(rentingHistory);
 
-    // TODO: create order here
+    const order = await this.orderService.createOrder({
+      userId,
+      amount: rentingPrice,
+      rentingId: rentingHistory.id,
+    });
+
+    return new ReturnScooterResponse({
+      rentBy: user.userName,
+      scooterNo: scooter.scooterNo,
+      rentOnTime: rentingHistory.startTime,
+      returnOnTime: rentingHistory.endTime,
+      rentTotalMinutes: this.calculateTotalMinutes(
+        rentingHistory.startTime,
+        rentingHistory.endTime,
+      ),
+      pricePerMinute: 2,
+      totalPrice: order.amount,
+      orderCreatedAt: order.createdAt,
+    });
   }
 
   private async getRentingHistory(
     userId: number,
   ): Promise<RentingHistory | null> {
-    return this.rentingHistoryRepository.findOneBy({
-      userId,
-      status: RentingStatus.IN_RENT,
+    return this.rentingHistoryRepository.findOne({
+      where: {
+        userId,
+        status: RentingStatus.IN_RENT,
+      },
+      order: { startTime: 'DESC' },
     });
   }
 
@@ -117,8 +149,15 @@ export class RentingService {
       throw new Error('Renting end time is not set');
     }
 
-    const rentDuration = rentEndTime.getTime() - rentStartTime.getTime();
-    const rentDurationRoundToMinutes = Math.ceil(rentDuration / 60000);
+    const rentDurationRoundToMinutes = this.calculateTotalMinutes(
+      rentStartTime,
+      rentEndTime,
+    );
     return rentDurationRoundToMinutes * 2;
+  }
+
+  private calculateTotalMinutes(startTime: Date, endTime: Date): number {
+    const rentDuration = endTime.getTime() - startTime.getTime();
+    return Math.ceil(rentDuration / 60000);
   }
 }

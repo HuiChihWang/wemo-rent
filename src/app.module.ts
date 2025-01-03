@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { ScooterModule } from './scooter/scooter.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -14,11 +15,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     RentModule,
     UserModule,
     ScooterModule,
+    HttpModule.register({}),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.NODE_ENV
-        ? `.env.${process.env.NODE_ENV}`
-        : '.env',
+      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
