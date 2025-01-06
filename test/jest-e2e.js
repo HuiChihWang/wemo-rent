@@ -6,7 +6,4 @@ module.exports = {
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
-  globals: {
-    // 'process.env.NODE_ENV': 'testing',
-  },
 };
