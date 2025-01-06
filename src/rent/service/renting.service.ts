@@ -82,11 +82,11 @@ export class RentingService {
     const user = await this.userService.getUserByUserName(userName);
 
     if (!user) {
-      throw new Error('User does not exist');
+      throw new NotFoundException('User does not exist');
     }
 
     if (!user.inRent) {
-      throw new Error('User is not renting any scooter');
+      throw new BadRequestException('User is not renting any scooter');
     }
 
     const userId = user.id;
