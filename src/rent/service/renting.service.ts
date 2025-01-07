@@ -125,6 +125,7 @@ export class RentingService {
       ),
       pricePerMinute: 2,
       totalPrice: order.amount,
+      orderNo: order.orderNo,
       orderCreatedAt: order.createdAt,
     });
   }

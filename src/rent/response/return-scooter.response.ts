@@ -6,6 +6,7 @@ export class ReturnScooterResponse {
   rentTotalMinutes: number;
   pricePerMinute: number;
   totalPrice: number;
+  orderNo: string;
   orderCreatedAt: Date;
 
   constructor(params: {
@@ -16,6 +17,7 @@ export class ReturnScooterResponse {
     rentTotalMinutes: number;
     pricePerMinute: number;
     totalPrice: number;
+    orderNo: string;
     orderCreatedAt: Date;
   }) {
     this.rentBy = params.rentBy;
@@ -25,6 +27,7 @@ export class ReturnScooterResponse {
     this.rentTotalMinutes = params.rentTotalMinutes;
     this.pricePerMinute = params.pricePerMinute;
     this.totalPrice = params.totalPrice;
+    this.orderNo = params.orderNo;
     this.orderCreatedAt = params.orderCreatedAt;
   }
 }

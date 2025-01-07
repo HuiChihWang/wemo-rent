@@ -23,6 +23,7 @@ export class OrderService implements IOrderService {
     const { data: resData } = await firstValueFrom(response$);
 
     return {
+      orderNo: resData.orderNo,
       rentingHistoryId: resData.rentingHistoryId,
       userId: resData.userId,
       amount: resData.amount,
@@ -32,19 +33,24 @@ export class OrderService implements IOrderService {
   }
 
   public async isUserHasUnpaidOrder(userId: number): Promise<boolean> {
-    const response$ = this.orderApiService.get<OrderListResponse>(
-      `/order/list`,
-      {
-        params: {
-          userId: userId,
-          status: OrderStatus.PENDING,
+    try {
+      const response$ = this.orderApiService.get<OrderListResponse>(
+        `/order/list`,
+        {
+          params: {
+            userId: userId,
+            status: OrderStatus.PENDING,
+          },
         },
-      },
-    );
+      );
 
-    const { data: resData } = await firstValueFrom(response$);
-    const total = resData.total;
+      const { data: resData } = await firstValueFrom(response$);
+      const total = resData.total;
 
-    return total > 0;
+      return total > 0;
+    } catch (error) {
+      console.log(error);
+      return true;
+    }
   }
 }

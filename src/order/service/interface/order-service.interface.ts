@@ -8,6 +8,7 @@ export interface IOrderService {
 }
 
 export interface OrderResponse {
+  orderNo: string;
   userId: number;
   rentingHistoryId: number;
   amount: number;

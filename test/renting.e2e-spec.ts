@@ -212,6 +212,7 @@ describe('RentingController (e2e)', () => {
       );
 
       givenCreatedOrder({
+        orderNo: 'ORDER_TEST',
         userId: user.id,
         rentingHistoryId: history.id,
         amount: 32,
@@ -227,6 +228,7 @@ describe('RentingController (e2e)', () => {
         rentTotalMinutes: 16,
         pricePerMinute: 2,
         totalPrice: 32,
+        orderNo: 'ORDER_TEST',
         orderCreatedAt: '2021-01-01T00:16:00.000Z',
       });
 
