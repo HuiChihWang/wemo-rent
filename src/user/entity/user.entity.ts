@@ -11,7 +11,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'user_name', unique: true, nullable: false })
+  @Column({ name: 'username', unique: true, nullable: false })
   userName: string;
 
   @Column({ name: 'in_rent', type: 'boolean', default: false })

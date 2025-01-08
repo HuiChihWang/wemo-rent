@@ -11,7 +11,7 @@ export enum RentingStatus {
   RETURNED = 'RETURNED',
 }
 
-@Entity('renting_history')
+@Entity('renting_histories')
 export class RentingHistory {
   @PrimaryGeneratedColumn()
   id: number;
