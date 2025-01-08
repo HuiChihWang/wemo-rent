@@ -14,7 +14,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
     }),
   ],
-  providers: [OrderService],
-  exports: [OrderService],
+  providers: [{ provide: 'ORDER_API_SERVICE', useClass: OrderService }],
+  exports: ['ORDER_API_SERVICE'],
 })
 export class OrderModule {}

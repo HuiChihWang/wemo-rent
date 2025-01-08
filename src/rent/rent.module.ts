@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { RentingController } from './controller/rentingController';
+import { RentingController } from './controller/renting.controller';
 import { RentingService } from './service/renting.service';
 import { ScooterModule } from '../scooter/scooter.module';
 import { UserModule } from '../user/user.module';

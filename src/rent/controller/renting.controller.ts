@@ -14,7 +14,8 @@ export class RentingController {
   public async startRent(
     @Body() request: RentingRequest,
   ): Promise<RentingResponse> {
-    return this.rentingService.startRent(request);
+    const rentingResult = await this.rentingService.startRent(request);
+    return RentingResponse.from(rentingResult);
   }
 
   @Post('return')
@@ -22,6 +23,7 @@ export class RentingController {
   public async finishRent(
     @Body() request: ReturnScooterRequest,
   ): Promise<ReturnScooterResponse> {
-    return this.rentingService.returnScooter(request);
+    const returnResult = await this.rentingService.returnScooter(request);
+    return ReturnScooterResponse.from(returnResult);
   }
 }

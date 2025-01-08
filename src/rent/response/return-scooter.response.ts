@@ -1,3 +1,5 @@
+import { ReturningResultDto } from '../dto/returning-result.dto';
+
 export class ReturnScooterResponse {
   rentBy: string;
   scooterNo: string;
@@ -29,5 +31,19 @@ export class ReturnScooterResponse {
     this.totalPrice = params.totalPrice;
     this.orderNo = params.orderNo;
     this.orderCreatedAt = params.orderCreatedAt;
+  }
+
+  public static from(data: ReturningResultDto): ReturnScooterResponse {
+    return new ReturnScooterResponse({
+      rentBy: data.rentBy.userName,
+      scooterNo: data.scooter.scooterNo,
+      rentOnTime: data.history.startTime,
+      returnOnTime: data.history.endTime,
+      rentTotalMinutes: data.detail.totalMinutes,
+      pricePerMinute: data.detail.pricePerMinute,
+      totalPrice: data.order.amount,
+      orderNo: data.order.orderNo,
+      orderCreatedAt: data.order.createdAt,
+    });
   }
 }

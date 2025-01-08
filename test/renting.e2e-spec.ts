@@ -5,15 +5,15 @@ import { AppModule } from '../src/app.module';
 import { DataSource } from 'typeorm';
 import { User } from '../src/user/entity/user.entity';
 import { Scooter } from '../src/scooter/entity/scooter.entity';
-import { OrderService } from '../src/order/service/order.service';
 import { RentingHistory } from '../src/rent/entity/renting_histoy.entity';
 import * as MockDate from 'mockdate';
 import { OrderDto } from '../src/order/dto/order.dto';
+import { IOrderService } from '../src/order/service/interface/order-service.interface';
 
 describe('RentingController (e2e)', () => {
   let app: INestApplication;
   let dataSource: DataSource;
-  let orderService: OrderService;
+  let orderService: IOrderService;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -24,7 +24,7 @@ describe('RentingController (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
     dataSource = app.get(DataSource);
-    orderService = app.get(OrderService);
+    orderService = app.get('ORDER_API_SERVICE');
   });
 
   afterEach(async () => {

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,14 +11,14 @@ import { ScooterStatus } from '../../scooter/entity/scooter.entity';
 import { RentingHistory, RentingStatus } from '../entity/renting_histoy.entity';
 import { RentingRequest } from '../request/renting.request';
 import { ReturnScooterRequest } from '../request/return-scooter.request';
-import { RentingResponse } from '../response/renting.response';
-import { OrderService } from '../../order/service/order.service';
-import { ReturnScooterResponse } from '../response/return-scooter.response';
+import { RentingResult } from '../dto/renting-result.dto';
+import { ReturningResultDto } from '../dto/returning-result.dto';
+import { IOrderService } from '../../order/service/interface/order-service.interface';
 
 @Injectable()
 export class RentingService {
   constructor(
-    private readonly orderService: OrderService,
+    @Inject('ORDER_API_SERVICE') private readonly orderService: IOrderService,
     private readonly scooterService: ScooterService,
     private readonly userService: UserService,
     private readonly rentingHistoryRepository: RentingHistoryRepository,
@@ -25,7 +26,7 @@ export class RentingService {
 
   public async startRent(
     rentingRequest: RentingRequest,
-  ): Promise<RentingResponse> {
+  ): Promise<RentingResult> {
     const { scooterNo, rentBy } = rentingRequest;
 
     const scooter = await this.scooterService.getScooterByScooterNo(scooterNo);
@@ -37,7 +38,6 @@ export class RentingService {
       throw new NotFoundException('User does not exist');
     }
 
-    // FIXME: deprecate isRent in user entity
     if (await this.isUserAlreadyRentScooter(user.id)) {
       throw new BadRequestException('User is already renting a scooter');
     }
@@ -67,16 +67,16 @@ export class RentingService {
 
     await this.rentingHistoryRepository.save(history);
 
-    return new RentingResponse(
-      history.startTime,
-      user.userName,
-      scooter.scooterNo,
-    );
+    return {
+      rentBy: user,
+      scooter: scooter,
+      rentOnTime: history.startTime,
+    };
   }
 
   public async returnScooter(
     returnRequest: ReturnScooterRequest,
-  ): Promise<ReturnScooterResponse> {
+  ): Promise<ReturningResultDto> {
     const userName = returnRequest.rentBy;
     const user = await this.userService.getUserByUserName(userName);
 
@@ -111,20 +111,19 @@ export class RentingService {
       rentingId: rentingHistory.id,
     });
 
-    return new ReturnScooterResponse({
-      rentBy: user.userName,
-      scooterNo: scooter.scooterNo,
-      rentOnTime: rentingHistory.startTime,
-      returnOnTime: rentingHistory.endTime,
-      rentTotalMinutes: this.calculateTotalMinutes(
-        rentingHistory.startTime,
-        rentingHistory.endTime,
-      ),
-      pricePerMinute: 2,
-      totalPrice: order.amount,
-      orderNo: order.orderNo,
-      orderCreatedAt: order.createdAt,
-    });
+    return {
+      order,
+      rentBy: user,
+      scooter,
+      history: rentingHistory,
+      detail: {
+        totalMinutes: this.calculateTotalMinutes(
+          rentingHistory.startTime,
+          rentingHistory.endTime,
+        ),
+        pricePerMinute: 2,
+      },
+    };
   }
 
   private async getRentingHistory(
