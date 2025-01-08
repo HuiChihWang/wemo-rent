@@ -38,6 +38,9 @@ describe('RentingController (e2e)', () => {
     `);
 
     for (const table of tables) {
+      if (table.tablename === 'migrations') {
+        continue;
+      }
       await dataSource.query(`TRUNCATE TABLE "${table.tablename}" CASCADE`);
     }
   });
@@ -117,7 +120,7 @@ describe('RentingController (e2e)', () => {
     });
 
     it('should return 404 if user not found', async () => {
-      await givenScooters([{ scooterNo: 'ABC-DEF' }]);
+      await givenScooters([{ scooterNo: 'ABC-DEF', status: 'AVAILABLE' }]);
       await sendRentingApi({
         rentBy: 'user1',
         scooterNo: 'ABC-DEF',
@@ -143,7 +146,7 @@ describe('RentingController (e2e)', () => {
 
     it('should return 400 if user is renting some scooter', async () => {
       await givenUsers([{ userName: 'user1', inRent: true }]);
-      await givenScooters([{ scooterNo: 'ABC-DEF' }]);
+      await givenScooters([{ scooterNo: 'ABC-DEF', status: 'AVAILABLE' }]);
       await sendRentingApi({
         rentBy: 'user1',
         scooterNo: 'ABC-DEF',
@@ -154,7 +157,7 @@ describe('RentingController (e2e)', () => {
       setTestNow('2021-01-01T00:00:00Z');
 
       await givenUsers([{ userName: 'user1' }]);
-      await givenScooters([{ scooterNo: 'ABC-DEF' }]);
+      await givenScooters([{ scooterNo: 'ABC-DEF', status: 'AVAILABLE' }]);
       givenUnpaidOrder(false);
 
       await sendRentingApi({
@@ -171,7 +174,7 @@ describe('RentingController (e2e)', () => {
 
     it('should return 400 if user has unpaid order', async () => {
       const [testUser] = await givenUsers([{ userName: 'user1' }]);
-      await givenScooters([{ scooterNo: 'ABC-DEF' }]);
+      await givenScooters([{ scooterNo: 'ABC-DEF', status: 'AVAILABLE' }]);
       givenUnpaidOrder();
       await sendRentingApi({
         rentBy: 'user1',
