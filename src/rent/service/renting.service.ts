@@ -37,7 +37,8 @@ export class RentingService {
       throw new NotFoundException('User does not exist');
     }
 
-    if (user.inRent) {
+    // FIXME: deprecate isRent in user entity
+    if (await this.isUserAlreadyRentScooter(user.id)) {
       throw new BadRequestException('User is already renting a scooter');
     }
 
@@ -56,8 +57,6 @@ export class RentingService {
       scooterId,
       ScooterStatus.RENTED,
     );
-
-    await this.userService.changeUserRentStatus(userId, true);
 
     const history = this.rentingHistoryRepository.create({
       scooterId,
@@ -85,7 +84,7 @@ export class RentingService {
       throw new NotFoundException('User does not exist');
     }
 
-    if (!user.inRent) {
+    if (!(await this.isUserAlreadyRentScooter(user.id))) {
       throw new BadRequestException('User is not renting any scooter');
     }
 
@@ -103,8 +102,6 @@ export class RentingService {
       scooter.id,
       ScooterStatus.AVAILABLE,
     );
-
-    await this.userService.changeUserRentStatus(userId, false);
 
     const rentingPrice = this.calculateRentingPrice(rentingHistory);
 
@@ -160,5 +157,17 @@ export class RentingService {
   private calculateTotalMinutes(startTime: Date, endTime: Date): number {
     const rentDuration = endTime.getTime() - startTime.getTime();
     return Math.ceil(rentDuration / 60000);
+  }
+
+  private async isUserAlreadyRentScooter(userId: number): Promise<boolean> {
+    const rentingHistory = await this.rentingHistoryRepository.findOne({
+      where: {
+        userId,
+        status: RentingStatus.IN_RENT,
+      },
+      order: { startTime: 'DESC' },
+    });
+
+    return !!rentingHistory;
   }
 }

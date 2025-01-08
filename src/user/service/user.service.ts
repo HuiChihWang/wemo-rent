@@ -9,15 +9,4 @@ export class UserService {
   public async getUserByUserName(userName: string): Promise<User | null> {
     return this.userRepository.findOneBy({ userName });
   }
-
-  public async changeUserRentStatus(userId: number, inRent: boolean) {
-    const user = await this.userRepository.findOneBy({ id: userId });
-
-    if (!user) {
-      throw new Error('User does not exist');
-    }
-
-    user.inRent = inRent;
-    await this.userRepository.save(user);
-  }
 }

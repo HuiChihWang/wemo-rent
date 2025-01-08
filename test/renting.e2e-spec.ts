@@ -71,7 +71,7 @@ describe('RentingController (e2e)', () => {
     const scooterRepo = dataSource.getRepository(Scooter);
     const rentingHistoryRepo = dataSource.getRepository(RentingHistory);
 
-    const user = userRepo.create({ userName, inRent: true });
+    const user = userRepo.create({ userName });
     const savedUser = await userRepo.save(user);
     const scooter = scooterRepo.create({ scooterNo, status: 'RENTED' });
     const savedScooter = await scooterRepo.save(scooter);
@@ -145,8 +145,12 @@ describe('RentingController (e2e)', () => {
     });
 
     it('should return 400 if user is renting some scooter', async () => {
-      await givenUsers([{ userName: 'user1', inRent: true }]);
       await givenScooters([{ scooterNo: 'ABC-DEF', status: 'AVAILABLE' }]);
+      await givenUserInRentingSomeScooter(
+        'user1',
+        'GDF-ERT',
+        '2021-01-01T00:00:00Z',
+      );
       await sendRentingApi({
         rentBy: 'user1',
         scooterNo: 'ABC-DEF',

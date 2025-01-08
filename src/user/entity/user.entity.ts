@@ -14,9 +14,6 @@ export class User {
   @Column({ name: 'username', unique: true, nullable: false })
   userName: string;
 
-  @Column({ name: 'in_rent', type: 'boolean', default: false })
-  inRent: boolean;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
